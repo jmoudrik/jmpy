@@ -10,7 +10,7 @@ def identity(x):
 
 def filter_null(iterable):
     """Filter out elements that do not evaluate to True
-    >>> list(filter_null((0,None,1,'','cherry')))
+    >>> list(filter_null((0, None, 1, '', 'cherry')))
     [1, 'cherry']
     """
     return filter(identity, iterable)
@@ -82,7 +82,7 @@ def bucket_by_key(iterable, key_fc):
     """
     Throws items in @iterable into buckets given by @key_fc function.
     e.g.
-    >>> bucket_by_key([1,2,-3,4,5,6,-7,8,-9], lambda num: 'neg' if num < 0 else 'nonneg')
+    >>> bucket_by_key([1, 2, -3, 4, 5, 6, -7, 8, -9], lambda num: 'neg' if num < 0 else 'nonneg')
     OrderedDict([('nonneg', [1, 2, 4, 5, 6, 8]), ('neg', [-3, -7, -9])])
     """
     buckets = _collections.OrderedDict()
