@@ -1,14 +1,7 @@
-import io
-import os
-import pickle
-import re
-import sys
-import time
-from collections import OrderedDict
-from contextlib import redirect_stdout, contextmanager
-
-from itertools import count
-import numpy as np
+import re as _re
+import collections as _collections
+import contextlib as _contextlib
+import itertools as _itertools
 
 
 def identity(x):
@@ -73,7 +66,7 @@ def argmax_index(values):
     >>> argmax_index([0, 4, 3, 2, 1, 4, 0])
     1
     """
-    return argmax(zip(count(), values))
+    return argmax(zip(_itertools.count(), values))
 
 
 def argmin_index(values):
@@ -82,7 +75,7 @@ def argmin_index(values):
     >>> argmin_index([10, 4, 0, 2, 1, 0])
     2
     """
-    return argmin(zip(count(), values))
+    return argmin(zip(_itertools.count(), values))
 
 
 def bucket_by_key(iterable, key_fc):
@@ -92,7 +85,7 @@ def bucket_by_key(iterable, key_fc):
     >>> bucket_by_key([1,2,-3,4,5,6,-7,8,-9], lambda num: 'neg' if num < 0 else 'nonneg')
     OrderedDict([('nonneg', [1, 2, 4, 5, 6, 8]), ('neg', [-3, -7, -9])])
     """
-    buckets = OrderedDict()
+    buckets = _collections.OrderedDict()
     for item in iterable:
         buckets.setdefault(key_fc(item), []).append(item)
     return buckets
@@ -113,6 +106,8 @@ def first_true_pred(predicates, value):
 
 
 def stderr(*args, **kwargs):
+    import sys
+
     kwargs['file'] = sys.stderr
     print(*args, **kwargs)
 
@@ -120,6 +115,9 @@ def stderr(*args, **kwargs):
 def cache_into(factory, filename):
     """Simple pickle caching. Calls `factory`, stores result to `filename` pickle.
     Subsequent calls load the obj from the pickle instead of running the `factory` again."""
+    import os
+    import pickle
+
     if os.path.exists(filename):
         stderr("loading from '%s'" % filename)
         with open(filename, 'rb') as fin:
@@ -140,7 +138,7 @@ def consuming_length(iterator):
 
 
 def simple_tokenize(txt, word_rexp=r"\W"):
-    txt = re.sub(word_rexp, ' ', txt)
+    txt = _re.sub(word_rexp, ' ', txt)
     for s in txt.split(' '):
         if s:
             yield s
@@ -246,11 +244,13 @@ def collapse_whitespace(txt):
     >>> collapse_whitespace("bla   bla")
     'bla bla'
     """
-    return re.sub(r'\s+', r' ', txt)
+    return _re.sub(r'\s+', r' ', txt)
 
 
-@contextmanager
+@_contextlib.contextmanager
 def timer(name='', verbose=True):
+    import time, numpy
+
     ts = []
 
     def next():
@@ -264,7 +264,7 @@ def timer(name='', verbose=True):
     for i in range(1, len(ts)):
         diffs.append(ts[i] - prev)
         prev = ts[i]
-    da = np.array(diffs)
+    da = numpy.array(diffs)
 
     if verbose:
         stderr("Timer %s, %d iterations:" % (repr(name), len(diffs)))
@@ -273,18 +273,20 @@ def timer(name='', verbose=True):
             stderr("avg\t%.3f s" % (da.mean()))
             stderr()
             stderr("min\t%.3f s" % (da.min()))
-            stderr("50%% <=\t%.3f s" % (np.median(da)))
-            stderr("95%% <=\t%.3f s" % (np.percentile(da, 95)))
+            stderr("50%% <=\t%.3f s" % (numpy.median(da)))
+            stderr("95%% <=\t%.3f s" % (numpy.percentile(da, 95)))
             stderr("max\t%.3f s" % (da.max()))
 
 
-@contextmanager
-def mod_stdout(transform, redirect_fn=redirect_stdout, print_fn=print):
+@_contextlib.contextmanager
+def mod_stdout(transform, redirect_fn=_contextlib.redirect_stdout, print_fn=print):
     """A context manager that modifies every line printed to stdout.
     >>> with mod_stdout(lambda line: line.upper()):
     ...     print("this will be upper")
     THIS WILL BE UPPER
     """
+    import io
+
     f = io.StringIO()
     with redirect_fn(f):
         yield
