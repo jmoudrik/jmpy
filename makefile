@@ -8,5 +8,8 @@ install:
 	sudo python3 setup.py install
 	make clean
 
+test:
+	python3 -m doctest -v jmpy/utils.py
+
 clean:
 	sudo rm -rf build dist jmpy.egg-info
