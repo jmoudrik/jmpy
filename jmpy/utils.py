@@ -256,26 +256,28 @@ def timer(name='', verbose=True):
     def next():
         ts.append(time.time())
 
-    yield next
-    next()
+    try:
+        yield next
+    finally:
+        next()
 
-    diffs = []
-    prev = ts[0]
-    for i in range(1, len(ts)):
-        diffs.append(ts[i] - prev)
-        prev = ts[i]
-    da = numpy.array(diffs)
+        diffs = []
+        prev = ts[0]
+        for i in range(1, len(ts)):
+            diffs.append(ts[i] - prev)
+            prev = ts[i]
+        da = numpy.array(diffs)
 
-    if verbose:
-        stderr("Timer %s, %d iterations:" % (repr(name), len(diffs)))
-        stderr("total\t%.3f s" % (da.sum()))
-        if diffs:
-            stderr("avg\t%.3f s" % (da.mean()))
-            stderr()
-            stderr("min\t%.3f s" % (da.min()))
-            stderr("50%% <=\t%.3f s" % (numpy.median(da)))
-            stderr("95%% <=\t%.3f s" % (numpy.percentile(da, 95)))
-            stderr("max\t%.3f s" % (da.max()))
+        if verbose:
+            stderr("Timer %s, %d iterations:" % (repr(name), len(diffs)))
+            stderr("total\t%.3f s" % (da.sum()))
+            if diffs:
+                stderr("avg\t%.3f s" % (da.mean()))
+                stderr()
+                stderr("min\t%.3f s" % (da.min()))
+                stderr("50%% <=\t%.3f s" % (numpy.median(da)))
+                stderr("95%% <=\t%.3f s" % (numpy.percentile(da, 95)))
+                stderr("max\t%.3f s" % (da.max()))
 
 
 @_contextlib.contextmanager
@@ -319,3 +321,5 @@ if __name__ == "__main__":
             j = 0
             for i in range(10000):
                 j += 10
+            if a == 20:
+                raise RuntimeError("ble")
