@@ -7,8 +7,12 @@ hello:
 
 install:
 	@echo 'Installing the `$(project)` module'
-	sudo python3 setup.py install
+	sudo pip3 install .
 	make clean
+
+uninstall:
+	@echo 'Un-installing the `$(project)` module'
+	sudo pip3 uninstall $(project)
 
 test:
 	python3 -m doctest -v $(project)/utils.py
