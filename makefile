@@ -1,15 +1,18 @@
+project := jmpy
 .DEFAULT_GOAL := hello
 
 hello:
-	@echo 'Hello. Run `make install` for installation or `make clean` for pkg cleanup.'
+	@echo 'Hello, this is makefile for $(project).'
+	@echo 'Run `make install` for installation or `make clean` for pkg cleanup.'
 
 install:
-	@echo 'Installing the `jmpy` module'
+	@echo 'Installing the `$(project)` module'
 	sudo python3 setup.py install
 	make clean
 
 test:
-	python3 -m doctest -v jmpy/utils.py
+	python3 -m doctest -v $(project)/utils.py
 
 clean:
-	sudo rm -rf build dist jmpy.egg-info
+	sudo rm -rf build dist $(project).egg-info
+
