@@ -249,7 +249,7 @@ def collapse_whitespace(txt):
 
 @_contextlib.contextmanager
 def timer(name='', verbose=True):
-    import time, numpy
+    import time
 
     ts = []
 
@@ -266,18 +266,40 @@ def timer(name='', verbose=True):
         for i in range(1, len(ts)):
             diffs.append(ts[i] - prev)
             prev = ts[i]
-        da = numpy.array(diffs)
 
         if verbose:
-            stderr("Timer %s, %d iterations:" % (repr(name), len(diffs)))
-            stderr("total\t%.3f s" % (da.sum()))
-            if diffs:
-                stderr("avg\t%.3f s" % (da.mean()))
-                stderr()
-                stderr("min\t%.3f s" % (da.min()))
-                stderr("50%% <=\t%.3f s" % (numpy.median(da)))
-                stderr("95%% <=\t%.3f s" % (numpy.percentile(da, 95)))
-                stderr("max\t%.3f s" % (da.max()))
+            stderr("Timer %s" % (repr(name)))
+            for k,(v, fmt) in num_stats(diffs).items():
+                stderr("\t%s\t%s%s"%(k, fmt%v, " s" if k != 'count' else ' iterations'))
+
+
+
+def num_stats(numbers, plot=True):
+    import numpy
+
+    def fl(num):
+        return num, "%.3f"
+
+    nums = numpy.array(numbers)
+    ret = _collections.OrderedDict()
+
+    ret['count'] = (len(numbers), "%d")
+
+    if numbers:
+        ret.update([
+        ("sum", fl(nums.sum())),
+        ("avg", fl(nums.mean())),
+        ("min", fl(nums.min())),
+        ("50%%", fl(numpy.median(nums))),
+        ("95%%", fl(numpy.percentile(nums, 95))),
+        ("max", fl(nums.max()))])
+
+        if plot:
+            from matplotlib import pyplot
+            pyplot.hist(nums, bins=20)
+            pyplot.show()
+    return ret
+
 
 
 @_contextlib.contextmanager
