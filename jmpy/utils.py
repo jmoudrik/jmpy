@@ -274,7 +274,7 @@ def timer(name='', verbose=True):
 
 
 
-def num_stats(numbers, plot=True):
+def num_stats(numbers, plot=False):
     import numpy
 
     def fl(num):

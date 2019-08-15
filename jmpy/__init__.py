@@ -18,6 +18,7 @@ __all__ = [
  'k_grams',
  'mod_stdout',
  'nonempty_strip',
+ 'num_stats',
  'prefix_stdout',
  'simple_tokenize',
  'stderr',
