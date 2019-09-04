@@ -20,3 +20,7 @@ test:
 clean:
 	sudo rm -rf build dist $(project).egg-info
 
+turn:
+	make clean
+	yes | make uninstall
+	make install
