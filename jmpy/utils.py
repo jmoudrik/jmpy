@@ -4,10 +4,12 @@ import collections as _collections
 import contextlib as _contextlib
 import itertools as _itertools
 
-from collections import defaultdict
+from typing import Any, Iterable, TypeVar, Callable, Tuple
+
+T = TypeVar('T')
 
 
-def identity(x):
+def identity(x: T) -> T:
     """Return itself
     >>> identity(1)
     1
@@ -15,7 +17,7 @@ def identity(x):
     return x
 
 
-def filter_null(iterable):
+def filter_null(iterable: Iterable[T]) -> Iterable[T]:
     """Filter out elements that do not evaluate to True
     >>> list(filter_null((0, None, 1, '', 'cherry')))
     [1, 'cherry']
@@ -23,7 +25,7 @@ def filter_null(iterable):
     return filter(identity, iterable)
 
 
-def filter_both(predicate, iterable):
+def filter_both(predicate: Callable[[T], bool], iterable: Iterable[T]) -> Iterable[T]:
     """ Splits the iterable into two groups, based on the result of
     calling `predicate` on each element.
 
@@ -43,7 +45,7 @@ def filter_both(predicate, iterable):
     return yes, no
 
 
-def flatten(iterables):
+def flatten(iterables: Iterable[Iterable[T]]) -> Iterable[T]:
     """
     >>> list(flatten(((1, 2, 3), (4, 5, 6))))
     [1, 2, 3, 4, 5, 6]
@@ -71,7 +73,7 @@ def argmin(pairs):
     return min(pairs, key=lambda x: x[1])[0]
 
 
-def argmax_index(values):
+def argmax_index(values: Iterable[T]) -> int:
     """Given an iterable of values, return the index of the (first) greatest value.
     Raises `ValueError` on empty sequence.
     >>> argmax_index([0, 4, 3, 2, 1, 4, 0])
@@ -80,7 +82,7 @@ def argmax_index(values):
     return argmax(zip(_itertools.count(), values))
 
 
-def argmin_index(values):
+def argmin_index(values: Iterable[T]) -> int:
     """Given an iterable of values, return the index of the (first) smallest value.
     Raises `ValueError` on empty sequence.
     >>> argmin_index([10, 4, 0, 2, 1, 0])
@@ -139,7 +141,7 @@ def cache_into(factory, filename):
     return obj
 
 
-def consuming_length(iterator):
+def consuming_length(iterator: Iterable[T]) -> int:
     """Return length of an iterator, consuming its contents. O(1) memory.
     >>> consuming_length(range(10))
     10
@@ -162,7 +164,7 @@ def simple_tokenize(txt, sep_rexp=r"\W"):
             yield s
 
 
-def k_grams(iterable, k):
+def k_grams(iterable: Iterable[T], k: int) -> Iterable[Tuple[T]]:
     """Returns iterator of k-grams of elements from `iterable`.
     >>> list(k_grams(range(4), 2))
     [(0, 1), (1, 2), (2, 3)]
@@ -261,7 +263,7 @@ def nonempty_strip(iterable):
             yield txt
 
 
-def collapse_whitespace(txt):
+def collapse_whitespace(txt:str)->str:
     """
     >>> collapse_whitespace("bla   bla")
     'bla bla'
