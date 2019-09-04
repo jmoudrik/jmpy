@@ -1,10 +1,17 @@
+import sys as _sys
 import re as _re
 import collections as _collections
 import contextlib as _contextlib
 import itertools as _itertools
 
+from collections import defaultdict
+
 
 def identity(x):
+    """Return itself
+    >>> identity(1)
+    1
+    """
     return x
 
 
@@ -37,6 +44,10 @@ def filter_both(predicate, iterable):
 
 
 def flatten(iterables):
+    """
+    >>> list(flatten(((1, 2, 3), (4, 5, 6))))
+    [1, 2, 3, 4, 5, 6]
+    """
     for iterable in iterables:
         for element in iterable:
             yield element
@@ -106,9 +117,7 @@ def first_true_pred(predicates, value):
 
 
 def stderr(*args, **kwargs):
-    import sys
-
-    kwargs['file'] = sys.stderr
+    kwargs['file'] = _sys.stderr
     print(*args, **kwargs)
 
 
@@ -131,14 +140,23 @@ def cache_into(factory, filename):
 
 
 def consuming_length(iterator):
+    """Return length of an iterator, consuming its contents. O(1) memory.
+    >>> consuming_length(range(10))
+    10
+    """
     cnt = 0
     for _ in iterator:
         cnt += 1
     return cnt
 
 
-def simple_tokenize(txt, word_rexp=r"\W"):
-    txt = _re.sub(word_rexp, ' ', txt)
+def simple_tokenize(txt, sep_rexp=r"\W"):
+    """Iterates through tokens, kwarg `sep_rexp` specifies the whitespace.
+    O(N) memory.
+    >>> list(simple_tokenize('23_45 hello, how are  you?'))
+    ['23_45', 'hello', 'how', 'are', 'you']
+    """
+    txt = _re.sub(sep_rexp, ' ', txt)
     for s in txt.split(' '):
         if s:
             yield s
@@ -233,6 +251,10 @@ def group_consequent(iterator, key=None):
 
 
 def nonempty_strip(iterable):
+    """
+    >>> list(nonempty_strip(['little ', '    ', '\tpiggy\\n']))
+    ['little', 'piggy']
+    """
     for txt in iterable:
         txt = txt.strip()
         if txt:
@@ -269,30 +291,43 @@ def timer(name='', verbose=True):
 
         if verbose:
             stderr("Timer %s" % (repr(name)))
-            for k,(v, fmt) in num_stats(diffs).items():
-                stderr("\t%s\t%s%s"%(k, fmt%v, " s" if k != 'count' else ' iterations'))
-
+            stats = num_stats(diffs)
+            units = {k: " s" if k != 'count' else ' iterations' for k in stats.keys()}
+            print_num_stats(stats, units=units, file=_sys.stderr)
 
 
 def num_stats(numbers, plot=False):
+    """Computes stats of the `numbers`, returns an OrderedDict with value and suggested print format
+    If `plot` is True, a histogram of the values is plotted (requires matplotlib).
+    >>> num_stats(range(10))
+    OrderedDict([('count', 10), ('sum', 45), ('avg', 4.5), ('min', 0), ('50%', 4.5), ('95%', 8.5499999999999989), ('max', 9)])
+    >>> print_num_stats(num_stats(range(10)))
+    count 10
+    sum 45.000
+    avg 4.500
+    min 0.000
+    50% 4.500
+    95% 8.550
+    max 9.000
+    """
     import numpy
 
     def fl(num):
-        return num, "%.3f"
+        return num
 
     nums = numpy.array(numbers)
     ret = _collections.OrderedDict()
 
-    ret['count'] = (len(numbers), "%d")
+    ret['count'] = len(numbers)
 
     if numbers:
         ret.update([
-        ("sum", fl(nums.sum())),
-        ("avg", fl(nums.mean())),
-        ("min", fl(nums.min())),
-        ("50%%", fl(numpy.median(nums))),
-        ("95%%", fl(numpy.percentile(nums, 95))),
-        ("max", fl(nums.max()))])
+            ("sum", fl(nums.sum())),
+            ("avg", fl(nums.mean())),
+            ("min", fl(nums.min())),
+            ("50%", fl(numpy.median(nums))),
+            ("95%", fl(numpy.percentile(nums, 95))),
+            ("max", fl(nums.max()))])
 
         if plot:
             from matplotlib import pyplot
@@ -300,6 +335,47 @@ def num_stats(numbers, plot=False):
             pyplot.show()
     return ret
 
+
+def print_num_stats(stats, units=None, formats=None, file=None):
+    """Utility function to print results of `num_stats` function.
+    >>> print_num_stats(num_stats(range(10)), units={'count':'iterations'})
+    count 10 iterations
+    sum 45.000
+    avg 4.500
+    min 0.000
+    50% 4.500
+    95% 8.550
+    max 9.000
+    >>> print_num_stats(num_stats(range(10)), formats={'sum':'%.5f'})
+    count 10
+    sum 45.00000
+    avg 4.500
+    min 0.000
+    50% 4.500
+    95% 8.550
+    max 9.000
+    """
+
+    def get_from(d, key, default):
+        if d is None:
+            return default
+        return d.get(key, default)
+
+    for key, value in stats.items():
+        fmt = "%.3f"
+        if isinstance(value, int):
+            fmt = "%d"
+        fmt = get_from(formats, key, fmt)
+
+        unit = get_from(units, key, '')
+        if unit:
+            unit = ' ' + unit
+
+        pstr = "%s %s%s" % (key, fmt % value, unit)
+        if file is None:
+            print(pstr)
+        else:
+            print(pstr, file=file)
 
 
 @_contextlib.contextmanager
