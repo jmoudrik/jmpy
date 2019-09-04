@@ -10,20 +10,20 @@ sudo python3 setup.py install
 ## API
 
 - [`argmax(pairs)`](#argmax(pairs))
-- [`argmax_index(values:Iterable[T]) -> int`](#argmax_index(values:iterable[t])-->-int)
+- [`argmax_index(values)`](#argmax_index(values))
 - [`argmin(pairs)`](#argmin(pairs))
-- [`argmin_index(values:Iterable[T]) -> int`](#argmin_index(values:iterable[t])-->-int)
+- [`argmin_index(values)`](#argmin_index(values))
 - [`bucket_by_key(iterable, key_fc)`](#bucket_by_key(iterable,-key_fc))
 - [`cache_into(factory, filename)`](#cache_into(factory,-filename))
-- [`collapse_whitespace(txt:str) -> str`](#collapse_whitespace(txt:str)-->-str)
-- [`consuming_length(iterator:Iterable[T]) -> int`](#consuming_length(iterator:iterable[t])-->-int)
-- [`filter_both(predicate:Callable[[T], bool], iterable:Iterable[T]) -> Iterable[T]`](#filter_both(predicate:callable[[t],-bool],-iterable:iterable[t])-->-iterable[t])
-- [`filter_null(iterable:Iterable[T]) -> Iterable[T]`](#filter_null(iterable:iterable[t])-->-iterable[t])
+- [`collapse_whitespace(txt)`](#collapse_whitespace(txt))
+- [`consuming_length(iterator)`](#consuming_length(iterator))
+- [`filter_both(predicate, iterable)`](#filter_both(predicate,-iterable))
+- [`filter_null(iterable)`](#filter_null(iterable))
 - [`first_true_pred(predicates, value)`](#first_true_pred(predicates,-value))
-- [`flatten(iterables:Iterable[Iterable[T]]) -> Iterable[T]`](#flatten(iterables:iterable[iterable[t]])-->-iterable[t])
+- [`flatten(iterables)`](#flatten(iterables))
 - [`group_consequent(iterator, key=None)`](#group_consequent(iterator,-key=none))
-- [`identity(x:T) -> T`](#identity(x:t)-->-t)
-- [`k_grams(iterable:Iterable[T], k:int) -> Iterable[Tuple[T]]`](#k_grams(iterable:iterable[t],-k:int)-->-iterable[tuple[t]])
+- [`identity(x)`](#identity(x))
+- [`k_grams(iterable, k)`](#k_grams(iterable,-k))
 - [`mod_stdout(transform, redirect_fn=<class 'contextlib.redirect_stdout'>, print_fn=<built-in function print>)`](#mod_stdout(transform,-redirect_fn=<class-'contextlib.redirect_stdout'>,-print_fn=<built-in-function-print>))
 - [`nonempty_strip(iterable)`](#nonempty_strip(iterable))
 - [`num_stats(numbers, plot=False)`](#num_stats(numbers,-plot=false))
@@ -45,7 +45,7 @@ Raises `ValueError` on empty sequence.
 ```
 
 
-### `argmax_index(values:Iterable[T]) -> int`
+### `argmax_index(values)`
 
 Given an iterable of values, return the index of the (first) greatest value.
 Raises `ValueError` on empty sequence.
@@ -65,7 +65,7 @@ Raises `ValueError` on empty sequence.
 ```
 
 
-### `argmin_index(values:Iterable[T]) -> int`
+### `argmin_index(values)`
 
 Given an iterable of values, return the index of the (first) smallest value.
 Raises `ValueError` on empty sequence.
@@ -91,7 +91,7 @@ Simple pickle caching. Calls `factory`, stores result to `filename` pickle.
 Subsequent calls load the obj from the pickle instead of running the `factory` again.
 
 
-### `collapse_whitespace(txt:str) -> str`
+### `collapse_whitespace(txt)`
 
 ```python
 >>> collapse_whitespace("bla   bla")
@@ -99,7 +99,7 @@ Subsequent calls load the obj from the pickle instead of running the `factory` a
 ```
 
 
-### `consuming_length(iterator:Iterable[T]) -> int`
+### `consuming_length(iterator)`
 
 Return length of an iterator, consuming its contents. O(1) memory.
 ```python
@@ -108,7 +108,7 @@ Return length of an iterator, consuming its contents. O(1) memory.
 ```
 
 
-### `filter_both(predicate:Callable[[T], bool], iterable:Iterable[T]) -> Iterable[T]`
+### `filter_both(predicate, iterable)`
 
 Splits the iterable into two groups, based on the result of
 calling `predicate` on each element.
@@ -123,7 +123,7 @@ this requirement.)
 ```
 
 
-### `filter_null(iterable:Iterable[T]) -> Iterable[T]`
+### `filter_null(iterable)`
 
 Filter out elements that do not evaluate to True
 ```python
@@ -144,7 +144,7 @@ If no such predicate found, raises IndexError.
 ```
 
 
-### `flatten(iterables:Iterable[Iterable[T]]) -> Iterable[T]`
+### `flatten(iterables)`
 
 ```python
 >>> list(flatten(((1, 2, 3), (4, 5, 6))))
@@ -169,7 +169,7 @@ Has O(maximal groupsize) memory footprint.
 ```
 
 
-### `identity(x:T) -> T`
+### `identity(x)`
 
 Return itself
 ```python
@@ -178,7 +178,7 @@ Return itself
 ```
 
 
-### `k_grams(iterable:Iterable[T], k:int) -> Iterable[Tuple[T]]`
+### `k_grams(iterable, k)`
 
 Returns iterator of k-grams of elements from `iterable`.
 ```python
