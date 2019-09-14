@@ -15,5 +15,5 @@ if __name__ == "__main__":
     plot = len(sys.argv) >= 2 and sys.argv[1] in ['-h', '--hist']
 
     stats = jmpy.utils.num_stats(nums, plot)
-    for k,(v, fmt) in stats.items():
-        print("\t%s\t%s"%(k, fmt%v))
+    jmpy.utils.print_num_stats(stats)
+
