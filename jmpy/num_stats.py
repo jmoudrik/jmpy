@@ -4,16 +4,20 @@ import jmpy.utils
 import sys
 
 if __name__ == "__main__":
-    nums = []
+    numbers = []
     for line in sys.stdin:
         line = line.strip()
+        if not line:
+            continue
         try:
-            nums.append(float(line))
+            numbers.append(float(line))
         except:
             print("skipping line '%s'"%(line[:5]), file=sys.stderr)
 
-    plot = len(sys.argv) >= 2 and sys.argv[1] in ['-h', '--hist']
+    def has_arg(l):
+        return len(sys.argv) >= 2 and any(a in l for a in sys.argv[1:])
 
-    stats = jmpy.utils.num_stats(nums, plot)
-    jmpy.utils.print_num_stats(stats)
+    plot = has_arg(['-h', '--hist'])
+
+    jmpy.utils.full_stats(numbers, plot, bins='doane')
 

@@ -1,5 +1,6 @@
 import sys as _sys
 import re as _re
+import math as _math
 import collections as _collections
 import contextlib as _contextlib
 import itertools as _itertools
@@ -294,15 +295,15 @@ def timer(name='', verbose=True):
             print_num_stats(stats, units=units, file=_sys.stderr)
 
 
-def num_stats(numbers, plot=False):
+def num_stats(numbers, print=False, plot=False, print_formats=None, bins='auto'):
     """Computes stats of the `numbers`, returns an OrderedDict with value and suggested print format
     If `plot` is True, a histogram of the values is plotted (requires matplotlib).
     >>> num_stats(range(10))
-    OrderedDict([('count', 10), ('sum', 45), ('avg', 4.5), ('min', 0), ('50%', 4.5), ('95%', 8.5499999999999989), ('max', 9)])
+    OrderedDict([('count', 10), ('sum', 45), ('mean', 4.5), ('min', 0), ('50%', 4.5), ('95%', 8.5499999999999989), ('max', 9)])
     >>> print_num_stats(num_stats(range(10)))
     count 10
     sum 45.000
-    avg 4.500
+    mean 4.500
     min 0.000
     50% 4.500
     95% 8.550
@@ -321,17 +322,147 @@ def num_stats(numbers, plot=False):
     if numbers:
         ret.update([
             ("sum", fl(nums.sum())),
-            ("avg", fl(nums.mean())),
+            ("mean", fl(nums.mean())),
+            ("sd", fl(numpy.std(nums))),
             ("min", fl(nums.min())),
+            ("1%", fl(numpy.percentile(nums, 1))),
+            ("5%", fl(numpy.percentile(nums, 5))),
+            ("25%", fl(numpy.percentile(nums, 25))),
             ("50%", fl(numpy.median(nums))),
+            ("75%", fl(numpy.percentile(nums, 75))),
             ("95%", fl(numpy.percentile(nums, 95))),
+            ("99%", fl(numpy.percentile(nums, 99))),
             ("max", fl(nums.max()))])
+
+        if print:
+            print_num_stats(ret, formats=print_formats)
 
         if plot:
             from matplotlib import pyplot
-            pyplot.hist(nums, bins=20)
+            pyplot.hist(nums, bins=bins)
             pyplot.show()
     return ret
+
+
+def draw_console_histogram(counts, bins, stats={}, max_bin_width=50):
+    # JM TODO
+    # FIXME
+    # problem: for small numbers, the %.2f format could hide
+    # information
+    # fix: the format for the bins should be variable based on
+    # some information measure or something
+
+    # FIXME boundaries suck cause they often have nonempty intersection
+
+    def fmt_f(f):
+        return "%.2f"%f
+
+    def pad_right(c, size):
+        return c + " "*max(0, size - len(c))
+
+    def pad_left(c, size):
+        return " "*max(0, size - len(c)) + c
+
+    def reduce_info(stuff):
+        return ''.join(stuff)
+
+    def first_or(a,b, add=True):
+        if a:
+            return a + (("." if (b and a[-1] != '.') else '') if add else '')
+        return b
+
+    def stat(flag, key, left, right):
+        if key not in stats:
+            return ''
+        val = stats[key]
+        if not (left <= val <= right):
+            return ''
+        return flag
+
+    col_pads = [ pad_right, pad_left]
+
+    def mkrow(s):
+        return ["%s = %.3f"%(pad_left(key,3), stats[key]) for key in s.split()]
+
+    def print_row(l, pd=10):
+        if not l:
+            return
+
+        for element in l:
+            print(pad_right(element, (0 if len(l) == 1 else pd)), end='\t')
+        print()
+
+    size = counts.sum()
+    print_row(["count  = %d"%size])
+    if size == 0:
+        return
+    if stats:
+        print_row(["mean   = %.3f ± %.3f"%(stats['mean'], stats['sd'])])
+        print_row(["median = %.3f"%(stats['50%'])])
+        print_row(["sum  = %.3f"%stats['sum']])
+        print_row(mkrow("min 1% 5% 25%"))
+        print_row(mkrow("max 99% 95% 75%"))
+
+        if 'mean' in stats and 'sd' in stats:
+            mean = stats['mean']
+            sd = stats['sd']
+            stats['sd_low'] = mean-sd
+            stats['sd_hi'] = mean+sd
+
+    m = counts.max()
+    digits = len(str(m))
+    digits_bin = max(len(fmt_f(b)) for b in bins)
+
+    boxes = counts
+    if m > max_bin_width:
+
+        mult = max_bin_width / m
+        boxes = boxes * mult
+        #print("one * is ~ %.1f elements"%(1/mult))
+
+    print()
+
+    count_norm = max(1, counts.sum())
+    cumsum = 0.0
+    for i in range(len(counts)):
+        left, right = bins[i], bins[i+1]
+        info = first_or(''.join((stat('m', 'mean', left, right),
+                                  stat('M', '50%', left, right))).strip(),
+                        first_or(
+                            first_or(first_or(stat('-', 'sd_low', left, right),
+                                              stat('25', '25%', left, right)),
+                                     first_or(stat('5', '5%', left, right),
+                                              stat('1', '1%', left, right)),
+                                     add=True),
+                            first_or(first_or(stat('-', 'sd_hi', left, right),
+                                              stat('75', '75%', left, right)),
+                                     first_or(stat('95', '95%', left, right),
+                                              stat('99', '99%', left, right)),
+                                     add=True),
+                            add=False)
+                    )
+        #print(repr(info))
+
+        cumsum += counts[i]
+        stars = _math.floor(boxes[i])
+        extra = _math.ceil(boxes[i]) - stars
+        row = "*" * stars + ('.' if extra > 0 else '')
+        print("%s, %s %s %s %s %s %s"%(
+            pad_left(fmt_f(left), digits_bin),
+            pad_left(fmt_f(right), digits_bin),
+            pad_left(str(counts[i]), digits),
+            pad_left(pad_right(info, 3), 6),
+            pad_left("%.0f%%"%(100*cumsum/count_norm), 4),
+            pad_left("%.0f%%"%(100*counts[i]/count_norm), 3),
+            row))
+
+
+def full_stats(numbers, plot=False, bins='sturges'):
+    stats = num_stats(numbers, plot=plot, bins=bins)
+    import numpy
+    counts, bins = numpy.histogram(numpy.array(numbers), bins=bins)
+    draw_console_histogram(counts, bins, stats=stats)
+
 
 
 def print_num_stats(stats, units=None, formats=None, file=None):
@@ -339,7 +470,7 @@ def print_num_stats(stats, units=None, formats=None, file=None):
     >>> print_num_stats(num_stats(range(10)), units={'count':'iterations'})
     count 10 iterations
     sum 45.000
-    avg 4.500
+    mean 4.500
     min 0.000
     50% 4.500
     95% 8.550
@@ -347,7 +478,14 @@ def print_num_stats(stats, units=None, formats=None, file=None):
     >>> print_num_stats(num_stats(range(10)), formats={'sum':'%.5f'})
     count 10
     sum 45.00000
-    avg 4.500
+    mean 4.500
+    min 0.000
+    50% 4.500
+    95% 8.550
+    max 9.000
+    >>> print_num_stats(num_stats(range(10)), formats={'sum':''})
+    count 10
+    mean 4.500
     min 0.000
     50% 4.500
     95% 8.550
@@ -364,6 +502,8 @@ def print_num_stats(stats, units=None, formats=None, file=None):
         if isinstance(value, int):
             fmt = "%d"
         fmt = get_from(formats, key, fmt)
+        if fmt == '':
+            continue
 
         unit = get_from(units, key, '')
         if unit:
