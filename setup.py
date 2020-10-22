@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='jmpy',
-    version='1.0.2',
+    version='1.0.3',
     url='https://github.com/jmoudrik/jmpy.git',
     author='Josef Moudřík',
     author_email='j.moudrik@gmail.com',
