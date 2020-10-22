@@ -15,7 +15,7 @@ uninstall:
 	sudo pip3 uninstall $(project)
 
 test:
-	python3 -m doctest -v $(project)/utils.py
+	python3 $(project)/utils.py
 
 clean:
 	sudo rm -rf build dist $(project).egg-info

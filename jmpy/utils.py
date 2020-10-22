@@ -376,7 +376,7 @@ def num_stats(numbers, print=False, print_formats=None):
     return ret
 
 
-def draw_console_histogram(counts, bins, nums, stats={}, max_bin_width=50, sum_hist=False, count_hist=True):
+def draw_console_histogram(counts, bins, nums, stats={}, sum_hist=False, count_hist=True, max_bin_width=50):
     import numpy
     # FIXME
     # problem: for small numbers, the %.2f format could hide
@@ -448,7 +448,7 @@ def draw_console_histogram(counts, bins, nums, stats={}, max_bin_width=50, sum_h
     if size == 0:
         return
     if stats:
-        print_row(["sum  = %.3f" % stats['sum']])
+        print_row(["sum    = %.3f" % stats['sum']])
         print_row(["mean   = %.3f ± %.3f" % (stats['mean'], stats['sd'])])
         print_row(["median = %.3f" % (stats['50%'])])
         print_row(mkrow("min 1% 5% 25%"))
@@ -507,7 +507,6 @@ def draw_console_histogram(counts, bins, nums, stats={}, max_bin_width=50, sum_h
 
     for print_num_sum in histogram_to_print:
         print()
-
         count_cumsum = 0.0
         cumsum = 0.0
         legend = "%s, %s %s %s  %s" % (
@@ -559,14 +558,47 @@ def draw_console_histogram(counts, bins, nums, stats={}, max_bin_width=50, sum_h
                 row))
 
 
-def full_stats(numbers, bins='sturges', count_hist=True, **kwargs):
+def full_stats(numbers, count_hist=True, sum_hist=False, bins='sturges', **kwargs):
+    """
+    Prints statistics of a list of `numbers` to console.
+
+    :param count_hist: prints histogram.
+    :param sum_hist: prints histogram, but of SUMS of the values in the bins.
+    :param bins: numpy bins arguments
+
+    >>> import numpy as np
+    >>> np.random.seed(666)
+    >>> first_peak = np.random.normal(size=100)
+    >>> second_peak = np.random.normal(loc=4,size=100)
+    >>> numbers = np.concatenate([first_peak, second_peak])
+    >>> full_stats(numbers)
+    count  = 200
+    sum    = 403.403
+    mean   = 2.017 ± 2.261
+    median = 1.874
+    min = -3.095	 1% = -1.870	 5% = -0.990	25% = -0.045
+    max = 7.217	99% = 6.063	95% = 5.404	75% = 4.089
+    <BLANKLINE>
+     <from,    to)  #       statistics of bin count
+    ------------------------------------------------
+    -3.095, -1.949  1        0%  0% *
+    -1.949, -0.803 18   5.  10%  9% ******************
+    -0.803,  0.343 48   -.  34% 24% ************************************************
+     0.343,  1.488 28       48% 14% ****************************
+     1.488,  2.634 12   mM  54%  6% ************
+     2.634,  3.780 34       70% 17% **********************************
+     3.780,  4.926 39   -.  90% 20% ***************************************
+     4.926,  6.071 18  95.  99%  9% ******************
+     6.071,  7.217  2      100%  1% **
+
+    """
     import numpy
     nums = numpy.array(numbers)
 
     stats = num_stats(nums)
 
     counts, bins = numpy.histogram(nums, bins=bins)
-    draw_console_histogram(counts, bins, nums, stats=stats, count_hist=count_hist, **kwargs)
+    draw_console_histogram(counts, bins, nums, stats=stats, count_hist=count_hist, sum_hist=sum_hist, **kwargs)
 
 
 def print_num_stats(stats, units=None, formats=None, file=None):
@@ -657,17 +689,24 @@ def prefix_stdout(prefix):
 
 
 if __name__ == "__main__":
-    print("# test")
-    with prefix_stdout("\t* "):
-        print("bullet 1")
-        print("bullet 2")
-    print()
+    if True:
+        print("TESTING")
+        import doctest
+        doctest.testmod(optionflags=doctest.NORMALIZE_WHITESPACE,
+                        verbose=True,
+                        report=True)
+    if False:
+        print("# test")
+        with prefix_stdout("\t* "):
+            print("bullet 1")
+            print("bullet 2")
+        print()
 
-    with timer("Test") as start_iteration:
-        for a in range(100):
-            start_iteration()
-            j = 0
-            for i in range(10000):
-                j += 10
-            if a == 20:
-                raise RuntimeError("ble")
+        with timer("Test") as start_iteration:
+            for a in range(100):
+                start_iteration()
+                j = 0
+                for i in range(10000):
+                    j += 10
+                if a == 20:
+                    raise RuntimeError("ble")
