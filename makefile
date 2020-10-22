@@ -24,3 +24,9 @@ turn:
 	make clean
 	yes | make uninstall
 	make install
+
+doc:
+	cat README_head.md > README.md
+	# need to fix broken doctests in pydoc-markdown
+	# BEWARE of make $ escaping (thus, we need $$ in the sed command below)
+	pydoc-markdown -m jmpy/utils --render-toc | sed '/>>>/{:l;N;s/\n$$/\n/;Tl;s/^/```python\n/;s/$$/```\n/}' >> README.md

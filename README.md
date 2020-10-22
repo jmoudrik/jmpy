@@ -7,108 +7,69 @@ jm's Python utils
 sudo python3 setup.py install
 ```
 
-## API
+# Table of Contents
 
-- [`argmax(pairs)`](#argmax(pairs))
-- [`argmax_index(values)`](#argmax_index(values))
-- [`argmin(pairs)`](#argmin(pairs))
-- [`argmin_index(values)`](#argmin_index(values))
-- [`bucket_by_key(iterable, key_fc)`](#bucket_by_key(iterable,-key_fc))
-- [`cache_into(factory, filename)`](#cache_into(factory,-filename))
-- [`collapse_whitespace(txt)`](#collapse_whitespace(txt))
-- [`consuming_length(iterator)`](#consuming_length(iterator))
-- [`filter_both(predicate, iterable)`](#filter_both(predicate,-iterable))
-- [`filter_null(iterable)`](#filter_null(iterable))
-- [`first_true_pred(predicates, value)`](#first_true_pred(predicates,-value))
-- [`flatten(iterables)`](#flatten(iterables))
-- [`group_consequent(iterator, key=None)`](#group_consequent(iterator,-key=none))
-- [`identity(x)`](#identity(x))
-- [`k_grams(iterable, k)`](#k_grams(iterable,-k))
-- [`mod_stdout(transform, redirect_fn=<class 'contextlib.redirect_stdout'>, print_fn=<built-in function print>)`](#mod_stdout(transform,-redirect_fn=<class-'contextlib.redirect_stdout'>,-print_fn=<built-in-function-print>))
-- [`nonempty_strip(iterable)`](#nonempty_strip(iterable))
-- [`num_stats(numbers, plot=False)`](#num_stats(numbers,-plot=false))
-- [`prefix_stdout(prefix)`](#prefix_stdout(prefix))
-- [`simple_tokenize(txt, sep_rexp='\\W')`](#simple_tokenize(txt,-sep_rexp='\\w'))
-- [`stderr(*args, **kwargs)`](#stderr(*args,-**kwargs))
-- [`timer(name='', verbose=True)`](#timer(name='',-verbose=true))
-- [`uniq(iterable, count=False)`](#uniq(iterable,-count=false))
-- [`utils`](#utils)
+* [jmpy/utils](#jmpy/utils)
+  * [identity](#jmpy/utils.identity)
+  * [filter\_null](#jmpy/utils.filter_null)
+  * [filter\_both](#jmpy/utils.filter_both)
+  * [flatten](#jmpy/utils.flatten)
+  * [argmax](#jmpy/utils.argmax)
+  * [argmin](#jmpy/utils.argmin)
+  * [argmax\_index](#jmpy/utils.argmax_index)
+  * [argmin\_index](#jmpy/utils.argmin_index)
+  * [bucket\_by\_key](#jmpy/utils.bucket_by_key)
+  * [first\_true\_pred](#jmpy/utils.first_true_pred)
+  * [cache\_into](#jmpy/utils.cache_into)
+  * [consuming\_length](#jmpy/utils.consuming_length)
+  * [simple\_tokenize](#jmpy/utils.simple_tokenize)
+  * [k\_grams](#jmpy/utils.k_grams)
+  * [uniq](#jmpy/utils.uniq)
+  * [group\_consequent](#jmpy/utils.group_consequent)
+  * [nonempty\_strip](#jmpy/utils.nonempty_strip)
+  * [collapse\_whitespace](#jmpy/utils.collapse_whitespace)
+  * [num\_stats](#jmpy/utils.num_stats)
+  * [print\_num\_stats](#jmpy/utils.print_num_stats)
+  * [mod\_stdout](#jmpy/utils.mod_stdout)
+  * [prefix\_stdout](#jmpy/utils.prefix_stdout)
 
+<a name="jmpy/utils"></a>
+# jmpy/utils
 
-### `argmax(pairs)`
+<a name="jmpy/utils.identity"></a>
+#### identity
 
-Given an iterable of pairs (key, value), return the key corresponding to the greatest value.
-Raises `ValueError` on empty sequence.
 ```python
->>> argmax(zip(range(20), range(20, 0, -1)))
-0
+identity(x)
 ```
 
+Return itself
 
-### `argmax_index(values)`
-
-Given an iterable of values, return the index of the (first) greatest value.
-Raises `ValueError` on empty sequence.
 ```python
->>> argmax_index([0, 4, 3, 2, 1, 4, 0])
+>>> identity(1)
 1
 ```
 
-
-### `argmin(pairs)`
-
-Given an iterable of pairs (key, value), return the key corresponding to the smallest value.
-Raises `ValueError` on empty sequence.
-```python
->>> argmin(zip(range(20), range(20, 0, -1)))
-19
-```
-
-
-### `argmin_index(values)`
-
-Given an iterable of values, return the index of the (first) smallest value.
-Raises `ValueError` on empty sequence.
-```python
->>> argmin_index([10, 4, 0, 2, 1, 0])
-2
-```
-
-
-### `bucket_by_key(iterable, key_fc)`
-
-Throws items in @iterable into buckets given by @key_fc function.
-e.g.
-```python
->>> bucket_by_key([1, 2, -3, 4, 5, 6, -7, 8, -9], lambda num: 'neg' if num < 0 else 'nonneg')
-OrderedDict([('nonneg', [1, 2, 4, 5, 6, 8]), ('neg', [-3, -7, -9])])
-```
-
-
-### `cache_into(factory, filename)`
-
-Simple pickle caching. Calls `factory`, stores result to `filename` pickle.
-Subsequent calls load the obj from the pickle instead of running the `factory` again.
-
-
-### `collapse_whitespace(txt)`
+<a name="jmpy/utils.filter_null"></a>
+#### filter\_null
 
 ```python
->>> collapse_whitespace("bla   bla")
-'bla bla'
+filter_null(iterable)
 ```
 
+Filter out elements that do not evaluate to True
 
-### `consuming_length(iterator)`
-
-Return length of an iterator, consuming its contents. O(1) memory.
 ```python
->>> consuming_length(range(10))
-10
+>>> list(filter_null((0, None, 1, '', 'cherry')))
+[1, 'cherry']
 ```
 
+<a name="jmpy/utils.filter_both"></a>
+#### filter\_both
 
-### `filter_both(predicate, iterable)`
+```python
+filter_both(predicate, iterable)
+```
 
 Splits the iterable into two groups, based on the result of
 calling `predicate` on each element.
@@ -117,22 +78,105 @@ WARN: Consumes the whole iterable in the process. This is the
 price for calling the `predicate` function only once for each
 element. (See itertools recipes for similar functionality without
 this requirement.)
+
 ```python
 >>> filter_both(lambda x: x%2 == 0, range(4))
 ([0, 2], [1, 3])
 ```
 
+<a name="jmpy/utils.flatten"></a>
+#### flatten
 
-### `filter_null(iterable)`
-
-Filter out elements that do not evaluate to True
 ```python
->>> list(filter_null((0, None, 1, '', 'cherry')))
-[1, 'cherry']
+flatten(iterables)
 ```
 
+```python
+>>> list(flatten(((1, 2, 3), (4, 5, 6))))
+[1, 2, 3, 4, 5, 6]
+```
 
-### `first_true_pred(predicates, value)`
+<a name="jmpy/utils.argmax"></a>
+#### argmax
+
+```python
+argmax(pairs)
+```
+
+Given an iterable of pairs (key, value), return the key corresponding to the greatest value.
+Raises `ValueError` on empty sequence.
+
+```python
+>>> argmax(zip(range(20), range(20, 0, -1)))
+0
+```
+
+<a name="jmpy/utils.argmin"></a>
+#### argmin
+
+```python
+argmin(pairs)
+```
+
+Given an iterable of pairs (key, value), return the key corresponding to the smallest value.
+Raises `ValueError` on empty sequence.
+
+```python
+>>> argmin(zip(range(20), range(20, 0, -1)))
+19
+```
+
+<a name="jmpy/utils.argmax_index"></a>
+#### argmax\_index
+
+```python
+argmax_index(values)
+```
+
+Given an iterable of values, return the index of the (first) greatest value.
+Raises `ValueError` on empty sequence.
+
+```python
+>>> argmax_index([0, 4, 3, 2, 1, 4, 0])
+1
+```
+
+<a name="jmpy/utils.argmin_index"></a>
+#### argmin\_index
+
+```python
+argmin_index(values)
+```
+
+Given an iterable of values, return the index of the (first) smallest value.
+Raises `ValueError` on empty sequence.
+
+```python
+>>> argmin_index([10, 4, 0, 2, 1, 0])
+2
+```
+
+<a name="jmpy/utils.bucket_by_key"></a>
+#### bucket\_by\_key
+
+```python
+bucket_by_key(iterable, key_fc)
+```
+
+Throws items in @iterable into buckets given by @key_fc function.
+e.g.
+
+```python
+>>> bucket_by_key([1, 2, -3, 4, 5, 6, -7, 8, -9], lambda num: 'neg' if num < 0 else 'nonneg')
+OrderedDict([('nonneg', [1, 2, 4, 5, 6, 8]), ('neg', [-3, -7, -9])])
+```
+
+<a name="jmpy/utils.first_true_pred"></a>
+#### first\_true\_pred
+
+```python
+first_true_pred(predicates, value)
+```
 
 Given a list of predicates and a value, return the index of first predicate,
 s.t. predicate(value) == True.
@@ -143,113 +187,69 @@ If no such predicate found, raises IndexError.
 1
 ```
 
-
-### `flatten(iterables)`
-
-```python
->>> list(flatten(((1, 2, 3), (4, 5, 6))))
-[1, 2, 3, 4, 5, 6]
-```
-
-
-### `group_consequent(iterator, key=None)`
-
-Groups consequent elements from an iterable and returns them
-as a sequence.
-
-Has O(maximal groupsize) memory footprint.
+<a name="jmpy/utils.cache_into"></a>
+#### cache\_into
 
 ```python
->>> list(group_consequent([0, 2, 1, 3, 2, 1], key=lambda x:x%2))
-[[0, 2], [1, 3], [2], [1]]
->>> list(group_consequent([None, None]))
-[[None, None]]
->>> [len(g) for g in group_consequent([1, 1, 1, 2, 3, 3, 2, 2])]
-[3, 1, 2, 2]
+cache_into(factory, filename)
 ```
 
+Simple pickle caching. Calls `factory`, stores result to `filename` pickle.
+Subsequent calls load the obj from the pickle instead of running the `factory` again.
 
-### `identity(x)`
-
-Return itself
-```python
->>> identity(1)
-1
-```
-
-
-### `k_grams(iterable, k)`
-
-Returns iterator of k-grams of elements from `iterable`.
-```python
->>> list(k_grams(range(4), 2))
-[(0, 1), (1, 2), (2, 3)]
->>> list(k_grams((), 2))
-[]
-```
-
-
-### `mod_stdout(transform, redirect_fn=<class 'contextlib.redirect_stdout'>, print_fn=<built-in function print>)`
-
-A context manager that modifies every line printed to stdout.
-```python
->>> with mod_stdout(lambda line: line.upper()):
-...     print("this will be upper")
-THIS WILL BE UPPER
-```
-
-
-### `nonempty_strip(iterable)`
+<a name="jmpy/utils.consuming_length"></a>
+#### consuming\_length
 
 ```python
->>> list(nonempty_strip(['little ', '    ', '       piggy\n']))
-['little', 'piggy']
+consuming_length(iterator)
 ```
 
+Return length of an iterator, consuming its contents. O(1) memory.
 
-### `num_stats(numbers, plot=False)`
-
-Computes stats of the `numbers`, returns an OrderedDict with value and suggested print format
-If `plot` is True, a histogram of the values is plotted (requires matplotlib).
 ```python
->>> num_stats(range(10))
-OrderedDict([('count', 10), ('sum', 45), ('avg', 4.5), ('min', 0), ('50%', 4.5), ('95%', 8.5499999999999989), ('max', 9)])
->>> print_num_stats(num_stats(range(10)))
-count 10
-sum 45.000
-avg 4.500
-min 0.000
-50% 4.500
-95% 8.550
-max 9.000
+>>> consuming_length(range(10))
+10
 ```
 
+<a name="jmpy/utils.simple_tokenize"></a>
+#### simple\_tokenize
 
-### `prefix_stdout(prefix)`
-
-A context manager that prefixes every line printed to stout by `prefix`.
 ```python
->>> with prefix_stdout(" * "):
-...     print("bullet")
- * bullet
+simple_tokenize(txt, sep_rexp=r"\W")
 ```
-
-
-### `simple_tokenize(txt, sep_rexp='\\W')`
 
 Iterates through tokens, kwarg `sep_rexp` specifies the whitespace.
 O(N) memory.
+
 ```python
 >>> list(simple_tokenize('23_45 hello, how are  you?'))
 ['23_45', 'hello', 'how', 'are', 'you']
 ```
 
+<a name="jmpy/utils.k_grams"></a>
+#### k\_grams
 
+```python
+k_grams(iterable, k)
+```
 
+Returns iterator of k-grams of elements from `iterable`.
 
+```python
+>>> list(k_grams(range(4), 2))
+[(0, 1), (1, 2), (2, 3)]
+>>> list(k_grams((), 2))
+[]
+>>> list(k_grams((1,), 2))
+[]
+```
 
+<a name="jmpy/utils.uniq"></a>
+#### uniq
 
-### `uniq(iterable, count=False)`
+```python
+uniq(iterable, count=False)
+```
 
 Similar to unix `uniq`. Returns counts as well if `count` arg is True.
 Has O(1) memory footprint.
@@ -267,4 +267,144 @@ Has O(1) memory footprint.
 []
 ```
 
+<a name="jmpy/utils.group_consequent"></a>
+#### group\_consequent
+
+```python
+group_consequent(iterator, key=None)
+```
+
+Groups consequent elements from an iterable and returns them
+as a sequence.
+
+Has O(maximal groupsize) memory footprint.
+
+```python
+>>> list(group_consequent([0, 2, 1, 3, 2, 1], key=lambda x:x%2))
+[[0, 2], [1, 3], [2], [1]]
+>>> list(group_consequent([None, None]))
+[[None, None]]
+>>> [len(g) for g in group_consequent([1, 1, 1, 2, 3, 3, 2, 2])]
+[3, 1, 2, 2]
+```
+
+<a name="jmpy/utils.nonempty_strip"></a>
+#### nonempty\_strip
+
+```python
+nonempty_strip(iterable)
+```
+
+```python
+>>> list(nonempty_strip(['little ', '    ', '\tpiggy\\n']))
+['little', 'piggy']
+```
+
+<a name="jmpy/utils.collapse_whitespace"></a>
+#### collapse\_whitespace
+
+```python
+collapse_whitespace(txt)
+```
+
+```python
+>>> collapse_whitespace("bla   bla")
+'bla bla'
+```
+
+<a name="jmpy/utils.num_stats"></a>
+#### num\_stats
+
+```python
+num_stats(numbers, print=False, print_formats=None)
+```
+
+Computes stats of the `numbers`, returns an OrderedDict with value and suggested print format
+
+```python
+>>> num_stats(range(10))
+OrderedDict([('count', 10), ('sum', 45), ('mean', 4.5), ('sd', 2.8722813232690143), ('min', 0), ('1%', 0.09), ('5%', 0.45), ('25%', 2.25), ('50%', 4.5), ('75%', 6.75), ('95%', 8.549999999999999), ('99%', 8.91), ('max', 9)])
+>>> print_num_stats(num_stats(range(10)))
+count 10
+sum 45.000
+mean 4.500
+sd 2.872
+min 0.000
+1% 0.090
+5% 0.450
+25% 2.250
+50% 4.500
+75% 6.750
+95% 8.550
+99% 8.910
+max 9.000
+```
+
+<a name="jmpy/utils.print_num_stats"></a>
+#### print\_num\_stats
+
+```python
+print_num_stats(stats, units=None, formats=None, file=None)
+```
+
+Utility function to print results of `num_stats` function.
+
+```python
+>>> print_num_stats(num_stats(range(10)), units={'count':'iterations'}, formats={'sum':'%.5f'})
+count 10 iterations
+sum 45.00000
+mean 4.500
+sd 2.872
+min 0.000
+1% 0.090
+5% 0.450
+25% 2.250
+50% 4.500
+75% 6.750
+95% 8.550
+99% 8.910
+max 9.000
+>>> print_num_stats(num_stats(range(10)), formats={'sum':'', '1%':'', '5%':''})
+count 10
+mean 4.500
+sd 2.872
+min 0.000
+25% 2.250
+50% 4.500
+75% 6.750
+95% 8.550
+99% 8.910
+max 9.000
+```
+
+<a name="jmpy/utils.mod_stdout"></a>
+#### mod\_stdout
+
+```python
+@_contextlib.contextmanager
+mod_stdout(transform, redirect_fn=_contextlib.redirect_stdout, print_fn=print)
+```
+
+A context manager that modifies every line printed to stdout.
+
+```python
+>>> with mod_stdout(lambda line: line.upper()):
+...     print("this will be upper")
+THIS WILL BE UPPER
+```
+
+<a name="jmpy/utils.prefix_stdout"></a>
+#### prefix\_stdout
+
+```python
+prefix_stdout(prefix)
+```
+
+A context manager that prefixes every line printed to stout by `prefix`.
+
+```python
+>>> with prefix_stdout(" * "):
+...     print("bullet")
+ * bullet
+```
 

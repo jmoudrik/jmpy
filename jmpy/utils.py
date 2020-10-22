@@ -7,7 +7,9 @@ import sys as _sys
 
 
 def identity(x):
-    """Return itself
+    """
+    Return itself
+
     >>> identity(1)
     1
     """
@@ -15,7 +17,9 @@ def identity(x):
 
 
 def filter_null(iterable):
-    """Filter out elements that do not evaluate to True
+    """
+    Filter out elements that do not evaluate to True
+
     >>> list(filter_null((0, None, 1, '', 'cherry')))
     [1, 'cherry']
     """
@@ -23,13 +27,15 @@ def filter_null(iterable):
 
 
 def filter_both(predicate, iterable):
-    """ Splits the iterable into two groups, based on the result of
+    """
+    Splits the iterable into two groups, based on the result of
     calling `predicate` on each element.
 
     WARN: Consumes the whole iterable in the process. This is the
     price for calling the `predicate` function only once for each
     element. (See itertools recipes for similar functionality without
     this requirement.)
+
     >>> filter_both(lambda x: x%2 == 0, range(4))
     ([0, 2], [1, 3])
     """
@@ -53,8 +59,10 @@ def flatten(iterables):
 
 
 def argmax(pairs):
-    """Given an iterable of pairs (key, value), return the key corresponding to the greatest value.
+    """
+    Given an iterable of pairs (key, value), return the key corresponding to the greatest value.
     Raises `ValueError` on empty sequence.
+
     >>> argmax(zip(range(20), range(20, 0, -1)))
     0
     """
@@ -62,8 +70,10 @@ def argmax(pairs):
 
 
 def argmin(pairs):
-    """Given an iterable of pairs (key, value), return the key corresponding to the smallest value.
+    """
+    Given an iterable of pairs (key, value), return the key corresponding to the smallest value.
     Raises `ValueError` on empty sequence.
+
     >>> argmin(zip(range(20), range(20, 0, -1)))
     19
     """
@@ -71,8 +81,10 @@ def argmin(pairs):
 
 
 def argmax_index(values):
-    """Given an iterable of values, return the index of the (first) greatest value.
+    """
+    Given an iterable of values, return the index of the (first) greatest value.
     Raises `ValueError` on empty sequence.
+
     >>> argmax_index([0, 4, 3, 2, 1, 4, 0])
     1
     """
@@ -80,8 +92,10 @@ def argmax_index(values):
 
 
 def argmin_index(values):
-    """Given an iterable of values, return the index of the (first) smallest value.
+    """
+    Given an iterable of values, return the index of the (first) smallest value.
     Raises `ValueError` on empty sequence.
+
     >>> argmin_index([10, 4, 0, 2, 1, 0])
     2
     """
@@ -92,6 +106,7 @@ def bucket_by_key(iterable, key_fc):
     """
     Throws items in @iterable into buckets given by @key_fc function.
     e.g.
+
     >>> bucket_by_key([1, 2, -3, 4, 5, 6, -7, 8, -9], lambda num: 'neg' if num < 0 else 'nonneg')
     OrderedDict([('nonneg', [1, 2, 4, 5, 6, 8]), ('neg', [-3, -7, -9])])
     """
@@ -102,7 +117,8 @@ def bucket_by_key(iterable, key_fc):
 
 
 def first_true_pred(predicates, value):
-    """Given a list of predicates and a value, return the index of first predicate,
+    """
+    Given a list of predicates and a value, return the index of first predicate,
     s.t. predicate(value) == True.
     If no such predicate found, raises IndexError.
 
@@ -121,7 +137,8 @@ def stderr(*args, **kwargs):
 
 
 def cache_into(factory, filename):
-    """Simple pickle caching. Calls `factory`, stores result to `filename` pickle.
+    """
+    Simple pickle caching. Calls `factory`, stores result to `filename` pickle.
     Subsequent calls load the obj from the pickle instead of running the `factory` again."""
     import os
     import pickle
@@ -139,7 +156,9 @@ def cache_into(factory, filename):
 
 
 def consuming_length(iterator):
-    """Return length of an iterator, consuming its contents. O(1) memory.
+    """
+    Return length of an iterator, consuming its contents. O(1) memory.
+
     >>> consuming_length(range(10))
     10
     """
@@ -150,8 +169,10 @@ def consuming_length(iterator):
 
 
 def simple_tokenize(txt, sep_rexp=r"\W"):
-    """Iterates through tokens, kwarg `sep_rexp` specifies the whitespace.
+    """
+    Iterates through tokens, kwarg `sep_rexp` specifies the whitespace.
     O(N) memory.
+
     >>> list(simple_tokenize('23_45 hello, how are  you?'))
     ['23_45', 'hello', 'how', 'are', 'you']
     """
@@ -162,7 +183,9 @@ def simple_tokenize(txt, sep_rexp=r"\W"):
 
 
 def k_grams(iterable, k):
-    """Returns iterator of k-grams of elements from `iterable`.
+    """
+    Returns iterator of k-grams of elements from `iterable`.
+
     >>> list(k_grams(range(4), 2))
     [(0, 1), (1, 2), (2, 3)]
     >>> list(k_grams((), 2))
@@ -303,7 +326,9 @@ def timer(name='', verbose=True):
 
 
 def num_stats(numbers, print=False, print_formats=None):
-    """Computes stats of the `numbers`, returns an OrderedDict with value and suggested print format
+    """
+    Computes stats of the `numbers`, returns an OrderedDict with value and suggested print format
+
     >>> num_stats(range(10))
     OrderedDict([('count', 10), ('sum', 45), ('mean', 4.5), ('sd', 2.8722813232690143), ('min', 0), ('1%', 0.09), ('5%', 0.45), ('25%', 2.25), ('50%', 4.5), ('75%', 6.75), ('95%', 8.549999999999999), ('99%', 8.91), ('max', 9)])
     >>> print_num_stats(num_stats(range(10)))
@@ -545,7 +570,9 @@ def full_stats(numbers, bins='sturges', count_hist=True, **kwargs):
 
 
 def print_num_stats(stats, units=None, formats=None, file=None):
-    """Utility function to print results of `num_stats` function.
+    """
+    Utility function to print results of `num_stats` function.
+
     >>> print_num_stats(num_stats(range(10)), units={'count':'iterations'}, formats={'sum':'%.5f'})
     count 10 iterations
     sum 45.00000
@@ -599,7 +626,9 @@ def print_num_stats(stats, units=None, formats=None, file=None):
 
 @_contextlib.contextmanager
 def mod_stdout(transform, redirect_fn=_contextlib.redirect_stdout, print_fn=print):
-    """A context manager that modifies every line printed to stdout.
+    """
+    A context manager that modifies every line printed to stdout.
+
     >>> with mod_stdout(lambda line: line.upper()):
     ...     print("this will be upper")
     THIS WILL BE UPPER
@@ -617,7 +646,9 @@ def mod_stdout(transform, redirect_fn=_contextlib.redirect_stdout, print_fn=prin
 
 
 def prefix_stdout(prefix):
-    """A context manager that prefixes every line printed to stout by `prefix`.
+    """
+    A context manager that prefixes every line printed to stout by `prefix`.
+
     >>> with prefix_stdout(" * "):
     ...     print("bullet")
      * bullet
