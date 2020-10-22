@@ -7,6 +7,43 @@ jm's Python utils
 sudo python3 setup.py install
 ```
 
+## `num_stats` - detailed statistics in Your commandline
+
+Apart from the utility functions below, this contains a cmd-line program `num_stats`
+that prints statistics of numbers read from STDIN (or other files) to STDOUT.
+
+Run `num_stats --help` for help.
+
+For example:
+```sh
+# generate 300 random numbers first
+$ python -c 'import numpy;print("\n".join(map(str,numpy.random.normal(size=300))))' > numbers
+```
+Then:
+```
+# pipe them into the num_stats program
+$ cat numbers | num_stats -c
+count  = 300	
+sum    = 14.511	
+mean   = 0.048 ± 1.036	
+median = 0.060	
+min = -3.473     1% = -2.260    5% = -1.610    25% = -0.652	
+max = 2.878      99% = 2.322    95% = 1.628    75% = 0.796	
+
+ <from,    to)  #      statistics of bin count
+-----------------------------------------------
+-3.473, -2.838  1       0%  0% .
+-2.838, -2.203  4   1   2%  1% **.
+-2.203, -1.568 15   5   7%  5% *********.
+-1.568, -0.932 35   -  18% 12% ***********************.
+-0.932, -0.297 58  25  38% 19% **************************************.
+-0.297,  0.338 76  mM  63% 25% **************************************************
+ 0.338,  0.973 52  75  80% 17% **********************************.
+ 0.973,  1.608 42   -  94% 14% ***************************.
+ 1.608,  2.243 10  95  98%  3% ******.
+ 2.243,  2.878  7  99 100%  2% ****.
+```
+
 # Table of Contents
 
 * [jmpy/utils](#jmpy/utils)
@@ -29,6 +66,7 @@ sudo python3 setup.py install
   * [nonempty\_strip](#jmpy/utils.nonempty_strip)
   * [collapse\_whitespace](#jmpy/utils.collapse_whitespace)
   * [num\_stats](#jmpy/utils.num_stats)
+  * [full\_stats](#jmpy/utils.full_stats)
   * [print\_num\_stats](#jmpy/utils.print_num_stats)
   * [mod\_stdout](#jmpy/utils.mod_stdout)
   * [prefix\_stdout](#jmpy/utils.prefix_stdout)
@@ -338,6 +376,48 @@ min 0.000
 95% 8.550
 99% 8.910
 max 9.000
+```
+
+<a name="jmpy/utils.full_stats"></a>
+#### full\_stats
+
+```python
+full_stats(numbers, count_hist=True, sum_hist=False, bins='sturges', **kwargs)
+```
+
+Prints statistics of a list of `numbers` to console.
+
+**Arguments**:
+
+- `count_hist`: prints histogram.
+- `sum_hist`: prints histogram, but of SUMS of the values in the bins.
+- `bins`: numpy bins arguments
+
+```python
+>>> import numpy as np
+>>> np.random.seed(666)
+>>> first_peak = np.random.normal(size=100)
+>>> second_peak = np.random.normal(loc=4,size=100)
+>>> numbers = np.concatenate([first_peak, second_peak])
+>>> full_stats(numbers)
+count  = 200
+sum    = 403.403
+mean   = 2.017 ± 2.261
+median = 1.874
+min = -3.095	 1% = -1.870	 5% = -0.990	25% = -0.045
+max = 7.217	99% = 6.063	95% = 5.404	75% = 4.089
+<BLANKLINE>
+<from,    to)  #       statistics of bin count
+------------------------------------------------
+-3.095, -1.949  1        0%  0% *
+-1.949, -0.803 18   5.  10%  9% ******************
+-0.803,  0.343 48   -.  34% 24% ************************************************
+0.343,  1.488 28       48% 14% ****************************
+1.488,  2.634 12   mM  54%  6% ************
+2.634,  3.780 34       70% 17% **********************************
+3.780,  4.926 39   -.  90% 20% ***************************************
+4.926,  6.071 18  95.  99%  9% ******************
+6.071,  7.217  2      100%  1% **
 ```
 
 <a name="jmpy/utils.print_num_stats"></a>
