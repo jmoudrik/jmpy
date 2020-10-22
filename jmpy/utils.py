@@ -1,9 +1,9 @@
-import sys as _sys
-import re as _re
-import math as _math
 import collections as _collections
 import contextlib as _contextlib
 import itertools as _itertools
+import math as _math
+import re as _re
+import sys as _sys
 
 
 def identity(x):
@@ -295,7 +295,7 @@ def timer(name='', verbose=True):
             print_num_stats(stats, units=units, file=_sys.stderr)
 
 
-def num_stats(numbers, print=False, plot=False, print_formats=None, bins='auto'):
+def num_stats(numbers, print=False, print_formats=None):
     """Computes stats of the `numbers`, returns an OrderedDict with value and suggested print format
     If `plot` is True, a histogram of the values is plotted (requires matplotlib).
     >>> num_stats(range(10))
@@ -319,7 +319,7 @@ def num_stats(numbers, print=False, plot=False, print_formats=None, bins='auto')
 
     ret['count'] = len(numbers)
 
-    if numbers:
+    if len(numbers):
         ret.update([
             ("sum", fl(nums.sum())),
             ("mean", fl(nums.mean())),
@@ -336,37 +336,51 @@ def num_stats(numbers, print=False, plot=False, print_formats=None, bins='auto')
 
         if print:
             print_num_stats(ret, formats=print_formats)
-
-        if plot:
-            from matplotlib import pyplot
-            pyplot.hist(nums, bins=bins)
-            pyplot.show()
     return ret
 
 
-def draw_console_histogram(counts, bins, stats={}, max_bin_width=50):
-    # JM TODO
+def draw_console_histogram(counts, bins, nums, stats={}, max_bin_width=50, sum_hist=False, count_hist=True):
+    import numpy
     # FIXME
     # problem: for small numbers, the %.2f format could hide
     # information
     # fix: the format for the bins should be variable based on
     # some information measure or something
 
-    # FIXME boundaries suck cause they often have nonempty intersection
+    assert nums.min() == bins[0] and nums.max() == bins[-1]
+
+    if sum_hist and (nums < 0.0).any():
+        stderr("WARN: num_sums only makes sense for positive numbers.")
+        stderr("WARN:   plotting counts instead")
+        sum_hist = False
+        count_hist = True
+
+    histogram_to_print = []
+    if count_hist:
+        histogram_to_print.append(False)
+    if sum_hist:
+        histogram_to_print.append(True)
+
+    def norm_to_width(counts):
+        max_count = counts.max()
+        if max_count > max_bin_width:
+            norm = max_count / max_bin_width
+            return counts / norm, max_count
+        return counts, max_count
 
     def fmt_f(f):
-        return "%.2f"%f
+        return "%.3f" % f
 
     def pad_right(c, size):
-        return c + " "*max(0, size - len(c))
+        return c + " " * max(0, size - len(c))
 
     def pad_left(c, size):
-        return " "*max(0, size - len(c)) + c
+        return " " * max(0, size - len(c)) + c
 
     def reduce_info(stuff):
         return ''.join(stuff)
 
-    def first_or(a,b, add=True):
+    def first_or(a, b, add=True):
         if a:
             return a + (("." if (b and a[-1] != '.') else '') if add else '')
         return b
@@ -379,10 +393,10 @@ def draw_console_histogram(counts, bins, stats={}, max_bin_width=50):
             return ''
         return flag
 
-    col_pads = [ pad_right, pad_left]
+    col_pads = [pad_right, pad_left]
 
     def mkrow(s):
-        return ["%s = %.3f"%(pad_left(key,3), stats[key]) for key in s.split()]
+        return ["%s = %.3f" % (pad_left(key, 3), stats[key]) for key in s.split()]
 
     def print_row(l, pd=10):
         if not l:
@@ -393,41 +407,48 @@ def draw_console_histogram(counts, bins, stats={}, max_bin_width=50):
         print()
 
     size = counts.sum()
-    print_row(["count  = %d"%size])
+    print_row(["count  = %d" % size])
     if size == 0:
         return
     if stats:
-        print_row(["mean   = %.3f ± %.3f"%(stats['mean'], stats['sd'])])
-        print_row(["median = %.3f"%(stats['50%'])])
-        print_row(["sum  = %.3f"%stats['sum']])
+        print_row(["sum  = %.3f" % stats['sum']])
+        print_row(["mean   = %.3f ± %.3f" % (stats['mean'], stats['sd'])])
+        print_row(["median = %.3f" % (stats['50%'])])
         print_row(mkrow("min 1% 5% 25%"))
         print_row(mkrow("max 99% 95% 75%"))
 
         if 'mean' in stats and 'sd' in stats:
             mean = stats['mean']
             sd = stats['sd']
-            stats['sd_low'] = mean-sd
-            stats['sd_hi'] = mean+sd
+            stats['sd_low'] = mean - sd
+            stats['sd_hi'] = mean + sd
 
-    m = counts.max()
-    digits = len(str(m))
+    stars, max_count = norm_to_width(counts)
+
+    bin_sums = numpy.zeros(len(counts))
+    for i in range(len(counts)):
+        left, right = bins[i], bins[i + 1]
+
+        # https://numpy.org/doc/stable/reference/generated/numpy.histogram.html
+        # the last histogram boundary is not half-open
+        select_right = nums < right
+        if i == len(counts) - 1:
+            select_right = nums <= right
+
+        bin_select = (nums >= left) * select_right
+        bin_sums[i] = (nums * bin_select).sum()
+    stars_sum, max_count_sum = norm_to_width(bin_sums)
+
+    # num digits for count
+    digits = len(str(max_count))
+    # num digits for max size of bin (interval on the left)
     digits_bin = max(len(fmt_f(b)) for b in bins)
 
-    boxes = counts
-    if m > max_bin_width:
-
-        mult = max_bin_width / m
-        boxes = boxes * mult
-        #print("one * is ~ %.1f elements"%(1/mult))
-
-    print()
-
-    count_norm = max(1, counts.sum())
-    cumsum = 0.0
+    infos = []
     for i in range(len(counts)):
-        left, right = bins[i], bins[i+1]
+        left, right = bins[i], bins[i + 1]
         info = first_or(''.join((stat('m', 'mean', left, right),
-                                  stat('M', '50%', left, right))).strip(),
+                                 stat('M', '50%', left, right))).strip(),
                         first_or(
                             first_or(first_or(stat('-', 'sd_low', left, right),
                                               stat('25', '25%', left, right)),
@@ -440,29 +461,75 @@ def draw_console_histogram(counts, bins, stats={}, max_bin_width=50):
                                               stat('99', '99%', left, right)),
                                      add=True),
                             add=False)
-                    )
-        #print(repr(info))
+                        )
+        infos.append(info)
 
-        cumsum += counts[i]
-        stars = _math.floor(boxes[i])
-        extra = _math.ceil(boxes[i]) - stars
-        row = "*" * stars + ('.' if extra > 0 else '')
-        print("%s, %s %s %s %s %s %s"%(
-            pad_left(fmt_f(left), digits_bin),
-            pad_left(fmt_f(right), digits_bin),
-            pad_left(str(counts[i]), digits),
-            pad_left(pad_right(info, 3), 6),
-            pad_left("%.0f%%"%(100*cumsum/count_norm), 4),
-            pad_left("%.0f%%"%(100*counts[i]/count_norm), 3),
-            row))
+    info_len = max(map(len, infos))
+    sum_norm = max(1, nums.sum())
+    count_norm = max(1, counts.sum())
+
+    for print_num_sum in histogram_to_print:
+        print()
+
+        count_cumsum = 0.0
+        cumsum = 0.0
+        legend = "%s, %s %s %s  %s" % (
+            pad_left("<from", digits_bin),
+            pad_left("to)", digits_bin),
+            pad_left("#", digits),
+            pad_left("", 1 + info_len),
+            "statistic of bin SUM" if print_num_sum else "statistics of bin count")
+        print(legend)
+        print("-" * (len(legend) + int(legend.startswith(" "))))
+
+        for i in range(len(counts)):
+            left, right = bins[i], bins[i + 1]
+            count_cumsum += counts[i]
+            bin_sum = bin_sums[i]
+            cumsum += bin_sum
+            stars_float = stars[i]
+            if print_num_sum:
+                stars_float = stars_sum[i]
+
+            stars_here = _math.floor(stars_float)
+            # <stars, stars+1)
+            extra = _math.ceil(stars_float) - stars_here
+            assert extra <= 1
+            row = "*" * stars_here + ('.' if extra > 0 else '')
+
+            suff = ''
+            is_last_one = i == len(counts) - 1
+            round = lambda x: x  # _math.floor if not is_last_one else _math.ceil
+            d_cum = round(100 * count_cumsum / count_norm)
+            d_bin = 100 * counts[i] / count_norm
+            if print_num_sum:
+                d_cum = round(100 * cumsum / sum_norm)
+                d_bin = 100 * bin_sum / sum_norm
+
+            # just for pretty print
+            # this can be lower because of double rounding
+            if is_last_one:
+                pass
+                # d_cum = 100
+
+            print("%s, %s %s %s %s %s %s" % (
+                pad_left(fmt_f(left), digits_bin),
+                pad_left(fmt_f(right), digits_bin),
+                pad_left(str(counts[i]), digits),
+                pad_left(infos[i], 1 + info_len),
+                pad_left("%.0f%%" % (d_cum), 4),
+                pad_left("%.0f%%" % (d_bin), 3),
+                row))
 
 
-def full_stats(numbers, plot=False, bins='sturges'):
-    stats = num_stats(numbers, plot=plot, bins=bins)
+def full_stats(numbers, bins='sturges', count_hist=True, **kwargs):
     import numpy
-    counts, bins = numpy.histogram(numpy.array(numbers), bins=bins)
-    draw_console_histogram(counts, bins, stats=stats)
+    nums = numpy.array(numbers)
 
+    stats = num_stats(nums)
+
+    counts, bins = numpy.histogram(nums, bins=bins)
+    draw_console_histogram(counts, bins, nums, stats=stats, count_hist=count_hist, **kwargs)
 
 
 def print_num_stats(stats, units=None, formats=None, file=None):
