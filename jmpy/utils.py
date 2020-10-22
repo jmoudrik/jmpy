@@ -167,9 +167,16 @@ def k_grams(iterable, k):
     [(0, 1), (1, 2), (2, 3)]
     >>> list(k_grams((), 2))
     []
+    >>> list(k_grams((1,), 2))
+    []
     """
     it = iter(iterable)
-    keep = tuple(next(it) for i in range(k - 1))
+    keep = tuple(_itertools.islice(it, k-1))
+    # if we do not even have the starting k-1 elements, exit
+    if len(keep) < k - 1:
+        return
+
+    # every remaining element will yield a k-gram
     for e in it:
         this = keep + (e,)
         yield this
@@ -297,16 +304,21 @@ def timer(name='', verbose=True):
 
 def num_stats(numbers, print=False, print_formats=None):
     """Computes stats of the `numbers`, returns an OrderedDict with value and suggested print format
-    If `plot` is True, a histogram of the values is plotted (requires matplotlib).
     >>> num_stats(range(10))
-    OrderedDict([('count', 10), ('sum', 45), ('mean', 4.5), ('min', 0), ('50%', 4.5), ('95%', 8.5499999999999989), ('max', 9)])
+    OrderedDict([('count', 10), ('sum', 45), ('mean', 4.5), ('sd', 2.8722813232690143), ('min', 0), ('1%', 0.09), ('5%', 0.45), ('25%', 2.25), ('50%', 4.5), ('75%', 6.75), ('95%', 8.549999999999999), ('99%', 8.91), ('max', 9)])
     >>> print_num_stats(num_stats(range(10)))
     count 10
     sum 45.000
     mean 4.500
+    sd 2.872
     min 0.000
+    1% 0.090
+    5% 0.450
+    25% 2.250
     50% 4.500
+    75% 6.750
     95% 8.550
+    99% 8.910
     max 9.000
     """
     import numpy
@@ -534,28 +546,30 @@ def full_stats(numbers, bins='sturges', count_hist=True, **kwargs):
 
 def print_num_stats(stats, units=None, formats=None, file=None):
     """Utility function to print results of `num_stats` function.
-    >>> print_num_stats(num_stats(range(10)), units={'count':'iterations'})
+    >>> print_num_stats(num_stats(range(10)), units={'count':'iterations'}, formats={'sum':'%.5f'})
     count 10 iterations
-    sum 45.000
-    mean 4.500
-    min 0.000
-    50% 4.500
-    95% 8.550
-    max 9.000
-    >>> print_num_stats(num_stats(range(10)), formats={'sum':'%.5f'})
-    count 10
     sum 45.00000
     mean 4.500
+    sd 2.872
     min 0.000
+    1% 0.090
+    5% 0.450
+    25% 2.250
     50% 4.500
+    75% 6.750
     95% 8.550
+    99% 8.910
     max 9.000
-    >>> print_num_stats(num_stats(range(10)), formats={'sum':''})
+    >>> print_num_stats(num_stats(range(10)), formats={'sum':'', '1%':'', '5%':''})
     count 10
     mean 4.500
+    sd 2.872
     min 0.000
+    25% 2.250
     50% 4.500
+    75% 6.750
     95% 8.550
+    99% 8.910
     max 9.000
     """
 
