@@ -384,7 +384,7 @@ def draw_console_histogram(counts, bins, nums, stats={}, sum_hist=False, count_h
     # fix: the format for the bins should be variable based on
     # some information measure or something
 
-    assert nums.min() == bins[0] and nums.max() == bins[-1]
+    #assert nums.min() == bins[0] and nums.max() == bins[-1], str(bins)
 
     if sum_hist and (nums < 0.0).any():
         stderr("WARN: num_sums only makes sense for positive numbers.")
